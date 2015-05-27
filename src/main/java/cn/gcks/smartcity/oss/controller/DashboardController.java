@@ -40,6 +40,10 @@ public class DashboardController {
             return "redirect:/";
         }
 
+        model.addAttribute("level1Num", alarmCarpService.getLevel1Num());
+        model.addAttribute("level2Num", alarmCarpService.getLevel2Num());
+        model.addAttribute("level3Num", alarmCarpService.getLevel3Num());
+
         return "dashboard/ac";
     }
 

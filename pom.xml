@@ -19,7 +19,7 @@
         <main.basedir>${basedir}/../..</main.basedir>
         <java.version>1.8</java.version>
         <tomcat.version>8.0.20</tomcat.version>
-        <main-class></main-class>
+        <main-class>cn.gcks.smartcity.oss.Application</main-class>
         <spring-boot.version>1.2.3.RELEASE</spring-boot.version>
     </properties>
 
@@ -35,6 +35,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <dependency>
@@ -76,6 +84,17 @@
             <groupId>ch.ethz.ganymed</groupId>
             <artifactId>ganymed-ssh2</artifactId>
             <version>262</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+            <version>1.9.13</version>
         </dependency>
     </dependencies>
 

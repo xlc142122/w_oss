@@ -8,6 +8,7 @@ import cn.gcks.smartcity.oss.entity.AlarmRule;
 import lombok.Data;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,10 +36,23 @@ public class AlarmCarpService implements InitializingBean {
 
     private List<AlarmRule> alarmRuleList;
 
+    private boolean running = false;
+
+    //采集时间
+    private int day;
+
+    //告警数量
+    private Long level1Num = 0L;
+    private Long level2Num = 0L;
+    private Long level3Num = 0L;
+
     /**
      * log list
      */
-    private static Vector<AlarmInfo> alarmQUeue = new Vector<AlarmInfo>();
+    private static Vector<AlarmInfo> alarmQueue = new Vector<AlarmInfo>();
+
+    private Map<Integer, AlarmInfo> newAlarmMap = new HashMap<Integer, AlarmInfo>();
+    private int newAlarmIndex = 0;
 
     @Autowired
     private AlarmInfoService alarmInfoService;
@@ -69,8 +83,8 @@ public class AlarmCarpService implements InitializingBean {
      */
     public Vector<AlarmInfo> getAlarm(int number){
         Vector<AlarmInfo> vector = new Vector<AlarmInfo>();
-        for(int i = alarmQUeue.size() - 1; i>=0; i--){
-            vector.add(this.alarmQUeue.get(i));
+        for(int i = alarmQueue.size() - 1; i>=0; i--){
+            vector.add(this.alarmQueue.get(i));
 
             if(vector.size() == number){
                 break;
@@ -78,6 +92,27 @@ public class AlarmCarpService implements InitializingBean {
         }
 
         return vector;
+    }
+
+    public AlarmInfo getNewAlarm(int index){
+        if(index >= newAlarmMap.size()){
+            index = 0;
+        }
+
+        return newAlarmMap.get(index);
+//
+//        if(newAlarmQueue.size() > 0){
+//            try {
+//                AlarmInfo alarmInfo = newAlarmQueue.get(newAlarmQueue.size() - 1);
+//                //newAlarmQueue.remove(alarmInfo);
+//
+//                return alarmInfo;
+//            } catch (Exception e) {
+//                log.error("get new Alarm error: {}", ExceptionUtils.getStackTrace(e));
+//            }
+//        }
+//
+//        return null;
     }
 
     /**
@@ -89,37 +124,53 @@ public class AlarmCarpService implements InitializingBean {
             connection.connect();
 
             if (connection.authenticateWithPassword(username, password)) {
+                log.info("SSH登录{}成功，开始采集日志...", serverIp);
                 Session session = connection.openSession();
                 session.execCommand(command, "UTF-8");
 
                 InputStream stdout = new StreamGobbler(session.getStdout());
                 BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
 
-                while (Thread.interrupted()) {
-                    String line = br.readLine();
-                    System.out.println(line);
-                    if (line != null) {
-                        System.out.println(line);
+                while (true) {
+                    running = true;
+                    try{
+                        String line = br.readLine();
+                        if (line != null) {
+                            AlarmInfo alarmInfo = parserLog(line);
+                            if(alarmInfo != null){
+                                log.info("ALARM HIT: {}", line);
 
-                        if(alarmQUeue.size() == maxInMem){
-                            alarmQUeue.remove(0);
+                                if(alarmQueue.size() == maxInMem){
+                                    alarmQueue.remove(0);
+                                }
+
+                                alarmQueue.add(alarmInfo);
+                                if(newAlarmIndex > 500){
+                                    newAlarmIndex = 0;
+                                }
+                                newAlarmMap.put(newAlarmIndex, alarmInfo);
+                                newAlarmIndex++;
+                            }
                         }
-
-                        alarmQUeue.add(parserLog(line));
+                    }catch (Exception e){
+                        running = false;
+                        log.error("告警采集发生错误：{}", ExceptionUtils.getStackTrace(e));
                     }
+
                 }
 
             } else {
                 log.error("服务器用户名，用户名或密码错误：ip:{}, port:{}, username:{}, password:{}", serverIp, serverPort, username, password);
             }
         } catch (Exception e) {
+            running = false;
             log.error("连接服务器失败! ip:{}, port:{}", serverIp, serverPort);
         }
     }
 
     @Synchronized
     private void addAlarm(AlarmInfo alarmInfo){
-        alarmQUeue.add(alarmInfo);
+        alarmQueue.add(alarmInfo);
     }
     /**
      * 解析日志内容
@@ -139,14 +190,40 @@ public class AlarmCarpService implements InitializingBean {
             Matcher matcher = pattern.matcher(content);
 
             if (matcher.find()) {
-                String[] fieldArray = alarmRule.getContent().split("\\|");
+                //String[] fieldArray = alarmRule.getContent().split("\\|");
+
                 alarmInfo = new AlarmInfo();
-                alarmInfo.setVendor(1);
+                alarmInfo.setVendor(alarmRule.getVendor());
                 alarmInfo.setType(alarmRule.getType());
                 alarmInfo.setLevel(alarmRule.getLevel());
+                alarmInfo.setContent(content);
+
+                Calendar cal = Calendar.getInstance();
+                int curDay = cal.get(Calendar.DAY_OF_MONTH);
+                if(curDay != day){
+                    setLevel1Num(0L);
+                    setLevel2Num(0L);
+                    setLevel3Num(0L);
+                }
+
+                switch (alarmRule.getLevel()){
+                    case 1:
+                        level1Num++;
+                        break;
+                    case 2:
+                        level2Num++;
+                        break;
+                    case 3:
+                        level3Num++;
+                        break;
+                    default:
+
+                }
+
+                //log.info("leve1Num:{}, level2Num:{}, level3Num:{}", level1Num, level2Num, level3Num);
 
                 switch (alarmRule.getType()) {
-                    case 1: //端口起停告警
+                    case 101: //端口起停告警
                         //eqip|gentime|eqname|-|f01|f02
                         alarmInfo.setEqIp(matcher.group(1));
                         try {
@@ -159,10 +236,10 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setF01(matcher.group(5)); //端口
                         alarmInfo.setF02(matcher.group(6)); //状态
 
-                        alarmInfo.setAbDesc("端口起停告警：端口：" + alarmInfo.getF01() + "， 状态：" + alarmInfo.getF02());
+                        alarmInfo.setAbDesc("端口：" + alarmInfo.getF01() + "， 状态：" + alarmInfo.getF02());
 
                         break;
-                    case 2: //系统重启
+                    case 102: //系统重启
                         //"gentime|eqip|eqname|-|f01";
                         SimpleDateFormat sdf2 = new SimpleDateFormat("MMM  dd HH:mm:ss", Locale.ENGLISH);
                         Date date = null;
@@ -186,7 +263,7 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setAbDesc("System restarted");
 
                         break;
-                    case 3: //光功率低
+                    case 103: //光功率低
                         //eqip|gentime|eqname|-|f01|f02
                         alarmInfo.setEqIp(matcher.group(1));
 
@@ -204,10 +281,10 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setF01(matcher.group(5)); //端口
                         alarmInfo.setF02(matcher.group(6)); //Rx功率
 
-                        alarmInfo.setAbDesc("光功率低：端口" + alarmInfo.getF01() + ", Rx power = " + alarmInfo.getF02());
+                        alarmInfo.setAbDesc("端口" + alarmInfo.getF01() + ", Rx power = " + alarmInfo.getF02());
 
                         break;
-                    case 4: //CPU利用率高
+                    case 104: //CPU利用率高
                         //eqip|gentime|eqname|-|f01|f02
                         alarmInfo.setEqIp(matcher.group(1));
 
@@ -225,10 +302,10 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setF01(matcher.group(5)); //设备
                         alarmInfo.setF02(matcher.group(6)); //CPU使用率
 
-                        alarmInfo.setAbDesc("CPU利用率高: 设备：" + alarmInfo.getF01() + ", CPU利用率：" + alarmInfo.getF02() + "%");
+                        alarmInfo.setAbDesc("设备：" + alarmInfo.getF01() + ", CPU利用率：" + alarmInfo.getF02() + "%");
 
                         break;
-                    case 5: //冷启动
+                    case 105: //冷启动
                         //eqip|gentime|eqname|-|f01|f02|f03
                         alarmInfo.setEqIp(matcher.group(1));
 
@@ -247,10 +324,10 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setF02(matcher.group(6)); //AP MAC
                         alarmInfo.setF03(matcher.group(7)); //恢复信息
 
-                        alarmInfo.setAbDesc("冷启动告警：APID:" + alarmInfo.getF01() + ", AP MAC:" + alarmInfo.getF02() + ", INFO:" + alarmInfo.getF03());
+                        alarmInfo.setAbDesc("APID:" + alarmInfo.getF01() + ", AP MAC:" + alarmInfo.getF02() + ", INFO:" + alarmInfo.getF03());
 
                         break;
-                    case 6: //无线端口
+                    case 106: //无线端口
                         //eqip|gentime|eqname|-|f01|f02|f03
                         alarmInfo.setEqIp(matcher.group(1));
 
@@ -269,9 +346,37 @@ public class AlarmCarpService implements InitializingBean {
                         alarmInfo.setF02(matcher.group(7)); //AP MAC
                         alarmInfo.setF03(matcher.group(8)); //CauseStr
 
-                        alarmInfo.setAbDesc("无线端口告警：APID:" + alarmInfo.getF01() + ", AP MAC:" + alarmInfo.getF02() +",原因：" + alarmInfo.getF03());
+                        alarmInfo.setAbDesc("APID:" + alarmInfo.getF01() + ", AP MAC:" + alarmInfo.getF02() +",原因：" + alarmInfo.getF03());
 
                         break;
+                    case 107:
+                        //field = "eqip|gentime|eqname|-|f01|f02|f03|f04";
+                        alarmInfo.setEqIp(matcher.group(1));
+
+                        Date date7 = null;
+                        try {
+                            date7 = sdf.parse(matcher.group(2));
+                        } catch (ParseException e) {
+                            log.info("gentime error:{}", content);
+                        }
+
+                        alarmInfo.setGenTime(date7);
+
+                        alarmInfo.setEqName(matcher.group(3));
+
+                        alarmInfo.setF01(matcher.group(5)); //SourceAttackInterface
+                        alarmInfo.setF02(matcher.group(6)); //OuterVlan/InnerVlan
+                        alarmInfo.setF03(matcher.group(7)); //UserMacAddress
+                        alarmInfo.setF04(matcher.group(8)); //AttackPackets
+
+                        alarmInfo.setAbDesc("端口:" + alarmInfo.getF01() + ", Vlan:"
+                                + alarmInfo.getF02() +",UserMac：" + alarmInfo.getF03()
+                                + ", rate:" + alarmInfo.getF04() + "packets/s");
+
+
+                        break;
+                    default:
+                        log.warn("未识别告警：type:{}, content: {}", alarmRule.getType(), content);
 
                 }
 
@@ -280,11 +385,17 @@ public class AlarmCarpService implements InitializingBean {
         }
 
         if(alarmInfo != null){
-            alarmInfoService.save(alarmInfo);
+            if(alarmInfo.getContent() == null || alarmInfo.getContent().equals("")){
+                log.error("Error:{}", content);
+            }else{
+                alarmInfoService.save(alarmInfo);
+            }
+
         }
 
         return alarmInfo;
     }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -293,26 +404,16 @@ public class AlarmCarpService implements InitializingBean {
         if (alarmRuleList == null || alarmRuleList.size() == 0) {
             log.error("alarm_rule为空， 不解析AC日志");
         }else{
-            this.carpAlarm();
+
         }
 
-        for(int i =0; i<100; i++){
-            AlarmInfo alarmInfo = new AlarmInfo();
-            alarmInfo.setId((long) i);
-            alarmInfo.setVendor(1);
-            alarmInfo.setLevel(i%3 == 0 ? 1 : i%3);
-            alarmInfo.setEqIp("10.32.8." + i);
-            alarmInfo.setEqName("eq-" + i);
-            alarmInfo.setAbDesc("down");
-            alarmInfo.setGenTime(new Date());
-
-            alarmQUeue.add(alarmInfo);
-        }
+        Calendar cal = Calendar.getInstance();
+        day = cal.get(Calendar.DAY_OF_MONTH);
     }
 
     public static void main(String[] args) {
 
-        int type = 1;
+        int type = 7;
 
         String content = null;
         String regex = null;
@@ -459,6 +560,20 @@ public class AlarmCarpService implements InitializingBean {
                     }
                 }
                 break;
+            case 7:
+                content = "May 26 15:26:09 172.18.0.33 2015-5-26 15:26:09+08:00 DL-CORE-LHL-W-01 %%01SECE/4/USER_ATTACK(l)[200772]:User attack occurred.(Slot=MPU, SourceAttackInterface=Wlan-Dbss301:1666, OuterVlan/InnerVlan=301/0, UserMacAddress=509f-2706-c9b6, AttackPackets=32 packets per second)";
+                regex = ".*\\s(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s(.*)\\+08:00\\s*([a-zA-Z0-9\\-]+)\\s+.*(USER_ATTACK).*SourceAttackInterface=(.*),\\s+OuterVlan/InnerVlan=(.*),\\s*UserMacAddress=(.*),\\s+AttackPackets=(.*)\\s+packets per second.*";
+                field = "eqip|gentime|eqname|-|f01|f02|f03|f04";
+                pattern = Pattern.compile(regex);
+                matcher = pattern.matcher(content);
+
+                if(matcher.find()){
+                    for(int i = 0; i< 8; i++){
+                        System.out.println(matcher.group(i + 1));
+                    }
+                }
+                break;
+
         }
 
 

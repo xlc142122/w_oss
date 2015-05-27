@@ -74,16 +74,9 @@
                     <div class="info-box">
                         <span class="info-box-icon bg-red"><i class="fa fa-star-o"></i></span>
 
-                        <div class="info-box-content" style="">
+                        <div class="info-box-content">
                             <span class="info-box-text">严重告警</span>
-                            &nbsp;&nbsp;已处理: <a href="#"><span id="level1NumActive">${level1Num}</span></a>
-                            <%--<span id="level1NumActive" class="info-box-number">--%>
-                               <%--${level1Num}--%>
-                            <%--</span>--%>
-                            <br>
-                            &nbsp;&nbsp;待处理: <a href="#"><span id="level1NumInActive">
-                                ${level1Num}
-                            </span></a>
+                            <span id="level1Num" class="info-box-number">${level1Num}</span>
                         </div>
                         <!-- /.info-box-content -->
                     </div>
@@ -142,11 +135,10 @@
             <!-- /.row -->
 
             <div class="row">
-                <div id="con">
-                    <div class="table-responsive">
-                        <table id="alarmTab" class="table table-condensed" data-sort-name="level" data-sore-order="desc">
-                            <thead>
-                            <th width="10%">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <th width="16%">
                                 发生时间
                             </th>
                             <th width="8%">
@@ -155,16 +147,21 @@
                             <th width="10%">
                                 错误类型
                             </th>
-                            <th width="8%" data-sortable="true" data-field="level">
+                            <th width="8%">
                                 告警级别
                             </th>
                             <th width="8%">
                                 设备IP
                             </th>
-                            <th width="56%">
+                            <th width="50%">
                                 告警摘要
                             </th>
-                            </thead>
+                        </thead>
+                    </table>
+                </div>
+                <div id="con">
+                    <div class="table-responsive">
+                        <table class="table">
                             <tbody id="log">
                             </tbody>
                         </table>
@@ -194,37 +191,16 @@
     var ws = null;
 
     window.onload = function() {
-        ws = new SockJS('/alarmInfoSocket');
+        ws = new SockJS('/alarmSocket');
         ws.onopen = function() {
-            console.log('Info: Alarm Info WebSocket connection opened.');
+            console.log('Info: WebSocket connection opened.');
             ws.send("ping");
         };
         ws.onmessage = function(event) {
             //log('Received: ' + event.data);
-            //console.log("receiver: " + event.data)
-
-            var message = JSON.parse(event.data);
-            appendAlarm(message);
+            console.log("receiver: " + event.data)
         };
         ws.onclose = function() {
-            console.log('Info: Alarm Info WebSocket connection closed.');
-        };
-
-        var countSocket = new SockJS('/alarmCountSocket');
-        countSocket.onopen = function() {
-            console.log('Info: Alarm Count WebSocket connection opened.');
-            countSocket.send("ping");
-        };
-        countSocket.onmessage = function(event) {
-            //console.log(event.data);
-            var message = event.data.split("-");
-
-            $("#level1NumActive").text(message[0]);
-            $("#level1NumInActive").text(message[0]);
-            $("#level2Num").text(message[1]);
-            $("#level3Num").text(message[2]);
-        };
-        countSocket.onclose = function() {
             console.log('Info: WebSocket connection closed.');
         };
     }
@@ -252,93 +228,123 @@
         setConnected(false);
     }
 
-    function appendAlarm(message) {
+
+    var s = 0;
+
+    function log(message) {
 
         var log = $('#log');
         var showNum = $('#showNum').val();
 
-        var len=$("#alarmTab tr").length;
-        //console.log("tab len: " + len + ", shownum: " + showNum);
-        if(len > showNum){
-            for(var i = showNum; i < len; i++){
-                //console.log("remove:" + i)
-                $("#alarmTab tr:eq(" + i + ")").remove();
-            }
-            //$("#alarmTab tr:last").remove();
+        if (s != 0 && s % showNum == 0) {
+            log.slideUp(1500);
+            log.empty();
+            s = 0;
         }
 
         log.show();
 
         var str = "";
-        var vendor = '华为';
-        if(message.vendor == 1){
-            vendor = '华为';
-        }
+        for (var i = 0; i < message.length; i++) {
+            var vendor = '华为';
+            if(message[i].vendor == 1){
+                vendor = '华为';
+            }
 
-        var type = "";
-        switch(message.type)
-        {
-            case 101:
-                type = "端口起停";
-                break;
-            case 102:
-                type = "系统重启";
-                break;
-            case 103:
-                type = "光功率低";
-                break;
-            case 104:
-                type = "CPU利用率高";
-                break;
-            case 105:
-                type = "冷启动";
-                break;
-            case 106:
-                type = "无线端口";
-                break;
-            case 107:
-                type = "系统攻击";
-                break;
-            default:
-                type = "";
-        }
+            var type = "";
+            switch(message[i].type)
+            {
+                case 101:
+                    type = "端口起停";
+                    break;
+                case 102:
+                    type = "系统重启";
+                    break;
+                case 103:
+                    type = "光功率低";
+                    break;
+                case 104:
+                    type = "CPU利用率高";
+                    break;
+                case 105:
+                    type = "冷启动";
+                    break;
+                case 106:
+                    type = "无线端口";
+                    break;
+                case 107:
+                    type = "系统攻击";
+                    break;
+                default:
+                    type = "";
+            }
 
-        //var rand = parseInt(Math.random() * 10);
-        //message.level = rand % 3;
-        //console.log("level:" + message.level);
+            var level = "";
+            switch(message[i].level){
+                case 1:
+                    level = "严重";
+                    break;
+                case 2:
+                    level = "次要";
+                    break;
+                case 3:
+                    level = "一般";
+                    break;
+            }
 
-        var level = "";
-        switch(message.level){
-            case 1:
-                level = "严重";
-                break;
-            case 2:
-                level = "次要";
-                break;
-            case 3:
-                level = "一般";
-                break;
-        }
+            if (message[i].level == 3) {
+                str = "<tr id='tr" + s + "'' class='info'><td width='16%'>" + message[i].genTimeStr + "</td><td width='8%'>" + vendor +
+                        "</td><td width='10%'>" + type + "</td><td width='8%'>" + level + "</td><td width='8%'>" +
+                        message[i].eqIp + "</td><td width='50%'>" + message[i].abDesc + "</td></tr>";
+            }
+            if (message[i].level == 2) {
+                str = "<tr id='tr" + s + "'' class='warning' style='display:block'><td width='16%'>" + message[i].genTimeStr + "</td><td width='8%'>" + vendor +
+                        "</td><td width='10%'>" + type + "</td><td width='8%'>" + level + "</td><td width='8%'>" +
+                        message[i].eqIp + "</td><td width='50%'>" + message[i].abDesc + "</td></tr>";
+            }
+            if (message[i].level == 1) {
+                str = "<tr id='tr" + s + "'' class='danger' style='display:block'><td width='16%'>" + message[i].genTimeStr + "</td><td width='8%'>" + vendor +
+                        "</td><td width='10%'>" + type + "</td><td width='8%'>" + level + "</td><td width='8%'>" +
+                        message[i].eqIp + "</td><td width='50%'>" + message[i].abDesc + "</td></tr>";
+            }
 
-        if (message.level == 3) {
-            str = "<tr class='info'><td>" + message.genTimeStr + "</td><td>" + vendor +
-                    "</td><td>" + type + "</td><td>" + level + "</td><td>" +
-                    message.eqIp + "</td><td>" + message.abDesc + "</td></tr>";
-        }
-        if (message.level == 2) {
-            str = "<tr class='warning'><td>" + message.genTimeStr + "</td><td>" + vendor +
-                    "</td><td>" + type + "</td><td>" + level + "</td><td>" +
-                    message.eqIp + "</td><td>" + message.abDesc + "</td></tr>";
-        }
-        if (message.level == 1) {
-            str = "<tr class='danger'><td>" + message.genTimeStr + "</td><td>" + vendor +
-                    "</td><td>" + type + "</td><td>" + level + "</td><td>" +
-                    message.eqIp + "</td><td>" + message.abDesc + "</td></tr>";
-        }
+            log.prepend(str);
+            $('#tr' + s).fadeIn();
+            $('#tr' + s).click(function () {
 
-        log.prepend(str);
+                $('#detail').modal('show');
 
+            });
+            s++;
+        }
     }
+
+//    setInterval(function () {
+//        $.ajax({
+//            url: "/getAlarmNum",
+//            type: "GET",
+//            success: function (data) {
+//                var numbers = new Array();
+//                numbers = data.split('-');
+//
+//                $("#level1Num").text(numbers[0]);
+//                $("#level2Num").text(numbers[1]);
+//                $("#level3Num").text(numbers[2]);
+//
+//            }
+//        });
+//
+//        var showNum = $('#showNum').val();
+//
+//        $.ajax({
+//            url: "/getAlarm?number=" + showNum,
+//            type: "GET",
+//            success: function (data) {
+//                log(data);
+//            }
+//        });
+//
+//    }, 5000);
 
     $(function () {
         $('#con').slimScroll({

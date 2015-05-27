@@ -78,6 +78,7 @@ public class AlarmInfo {
     @Column(name = "f10")
     private String f10;
 
+    @Transient
     private String genTimeStr;
 
     public String getGenTimeStr(){

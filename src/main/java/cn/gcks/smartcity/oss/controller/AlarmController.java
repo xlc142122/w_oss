@@ -22,6 +22,11 @@ public class AlarmController {
     @RequestMapping(value = "getAlarm", method = RequestMethod.GET)
     @ResponseBody
     public Vector<AlarmInfo> getAlarm(@RequestParam("number")int number){
-        return alarmCarpService.getAlarm(number - 8);
+        return alarmCarpService.getAlarm(number);
+    }
+
+    @RequestMapping(value = "getAlarmNum", method = RequestMethod.GET)
+    public String getAlarmNum(){
+        return alarmCarpService.getLevel1Num() + "-" + alarmCarpService.getLevel2Num() + "-" + alarmCarpService.getLevel3Num();
     }
 }
