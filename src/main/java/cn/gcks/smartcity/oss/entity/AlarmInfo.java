@@ -36,6 +36,9 @@ public class AlarmInfo {
     @Column(name = "gentime")
     private Date genTime;
 
+    @Column(name = "status")
+    private int status;
+
     @Column(name = "recovertime")
     private Date recoverTime;
 

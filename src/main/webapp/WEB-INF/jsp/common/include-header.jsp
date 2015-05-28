@@ -27,10 +27,11 @@ folder instead of downloading all of them to reduce the load. -->
 <!-- bootstrap wysihtml5 - text editor -->
 <link href="../../../plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet" type="text/css"/>
 
-
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 <!--[if lt IE 9]>
 <script src="../../../dist/js/html5shiv.min.js"></script>
 <script src="../../../dist/js/respond.min.js"></script>
 <![endif]-->
+
+

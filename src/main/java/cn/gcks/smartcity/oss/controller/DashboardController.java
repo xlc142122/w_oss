@@ -2,6 +2,7 @@ package cn.gcks.smartcity.oss.controller;
 
 import cn.gcks.smartcity.oss.entity.AlarmInfo;
 import cn.gcks.smartcity.oss.service.AlarmCarpService;
+import cn.gcks.smartcity.oss.service.AlarmInfoService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,9 @@ public class DashboardController {
     @Autowired
     private AlarmCarpService alarmCarpService;
 
+    @Autowired
+    private AlarmInfoService alarmInfoService;
+
     @RequestMapping("index.htm")
     public String index(HttpSession httpSession, Model model){
         String username = (String) httpSession.getAttribute("username");
@@ -32,7 +36,7 @@ public class DashboardController {
         return "dashboard/index";
     }
 
-    @RequestMapping("ac.htm")
+    @RequestMapping("eqpalarm.htm")
     public String acAlarm(HttpSession httpSession, Model model){
         String username = (String) httpSession.getAttribute("username");
 
@@ -40,11 +44,15 @@ public class DashboardController {
             return "redirect:/";
         }
 
-        model.addAttribute("level1Num", alarmCarpService.getLevel1Num());
+        long level1NumActive = alarmInfoService.countByLevelAndStatus(1, 1);
+        long level1NumInActive = alarmInfoService.countByLevelAndStatus(1, 0);
+
+        model.addAttribute("level1NumActive", level1NumActive);
+        model.addAttribute("level1NumInActive", level1NumInActive);
         model.addAttribute("level2Num", alarmCarpService.getLevel2Num());
         model.addAttribute("level3Num", alarmCarpService.getLevel3Num());
 
-        return "dashboard/ac";
+        return "dashboard/eqpalarm";
     }
 
     @RequestMapping("server.htm")

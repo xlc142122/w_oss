@@ -19,7 +19,7 @@ public class AlarmCountWebSocketService extends TextWebSocketHandler {
     private Map<String, String> sessionMsgMap = new HashMap<String, String>();
 
     @Autowired
-    private AlarmCarpService alarmCarpService;
+    private AlarmInfoService alarmInfoService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -30,9 +30,8 @@ public class AlarmCountWebSocketService extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage textMessage)
             throws Exception {
 
-        log.info("handleTextMessage");
         while (true){
-            String msgContent = alarmCarpService.getLevel1Num() + "-" + alarmCarpService.getLevel2Num() + "-" + alarmCarpService.getLevel3Num();
+            String msgContent = alarmInfoService.getAlarmCount();
 
             String lastMsg = sessionMsgMap.get(session.getId());
             if(msgContent.equals(lastMsg)){
@@ -43,15 +42,22 @@ public class AlarmCountWebSocketService extends TextWebSocketHandler {
 
             sessionMsgMap.put(session.getId(), msgContent);
 
-            log.info("send to {}, msg: {}", session.getId(), msgContent);
+            //log.info("send to {}, msg: {}", session.getId(), msgContent);
 
-            session.sendMessage(new TextMessage(msgContent));
+            if(session.isOpen()) {
+                session.sendMessage(new TextMessage(msgContent));
+            }else{
+                sessionMsgMap.remove(session.getId());
+            }
         }
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception)
             throws Exception {
+
+        //log.info("session close: {}", session.getId());
+
         session.close(CloseStatus.SERVER_ERROR);
         sessionMsgMap.remove(session.getId());
     }

@@ -23,11 +23,11 @@
         <a href="/dashboard/index.htm"><i class="fa fa-circle-o"></i>告警总览</a>
       </li>
       <li id="dashAc">
-        <a href="/dashboard/ac.htm"><i class="fa fa-circle-o"></i>AC告警</a>
+        <a href="/dashboard/eqpalarm.htm"><i class="fa fa-circle-o"></i>设备告警</a>
       </li>
-      <li id="dashServer">
-        <a href="/dashboard/server.htm"><i class="fa fa-circle-o"></i>服务器告警</a>
-      </li>
+      <%--<li id="dashServer">--%>
+        <%--<a href="/dashboard/server.htm"><i class="fa fa-circle-o"></i>服务器告警</a>--%>
+      <%--</li>--%>
       <li id="dashSms">
         <a href="/dashboard/sms.htm"><i class="fa fa-circle-o"></i>短信网关告警</a>
       </li>
