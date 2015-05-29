@@ -410,7 +410,7 @@ public class AlarmCarpService implements InitializingBean {
         Calendar cal = Calendar.getInstance();
         day = cal.get(Calendar.DAY_OF_MONTH);
     }
-
+/*
     public static void main(String[] args) {
 
         int type = 7;
@@ -577,5 +577,5 @@ public class AlarmCarpService implements InitializingBean {
         }
 
 
-    }
+    }*/
 }
