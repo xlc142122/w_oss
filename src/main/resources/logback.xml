@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="300000">
-    <!--配置通过jconsole重新加载配置文件-->
-    <jmxConfigurator />
 
-    <contextName>smartcity-wifi-tools</contextName>
+    <contextName>smartcity-oss</contextName>
 
     <property name="root.logger.level" value="DEBUG"/>
     <property name="log.path" value="/var/log/gcks" />
