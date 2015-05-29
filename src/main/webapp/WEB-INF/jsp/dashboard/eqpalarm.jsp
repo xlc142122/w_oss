@@ -39,6 +39,10 @@
             border-bottom: solid 2px blue;
         }
 
+        #fullscreen {
+            margin-left:0px !important
+        }
+
     </style>
 
     <script type="text/javascript">
@@ -232,18 +236,53 @@
                 $("#inactiveAlarmTab tr:last").after(str);
             }
         }
+
+        function fullScreen(flag){
+            if(flag == 0){  //恢复
+                //$("#content").removeClass("fullscreen");
+                //$("#content").addClass("content");
+                $("#header").show();
+                $("#navigate").show();
+                $("wrapper").show();
+
+                //$(".content-wrapper").css("margin-left","50px");
+                $("#logoToggle").slideToggle();
+                //$("#contentWrapper").addClass("margin-left:50px");
+                //$("#contentWrapper").addClass("!important");
+
+                $("#contentWrapper").addClass("content-wrapper");
+
+
+
+                //50px!important
+
+            }else{//全屏
+                //$("#content").removeClass("content");
+                //$("#content").addClass("fullscreen");
+
+                $("#header").hide();
+                $("#navigate").hide();
+                $("wrapper").hide();
+
+                $("#contentWrapper").removeClass("content-wrapper");
+                $("#contentWrapper").css("background-color", "#ecf0f5");
+
+                $("#logoToggle").slideToggle();
+
+            }
+        }
     </script>
 </head>
 <body class="skin-blue sidebar-mini">
 <div class="wrapper">
-
-    <jsp:include page="../common/head.jsp"/>
-    <jsp:include page="../common/navigate.jsp"/>
-
+    <div id="header">
+        <jsp:include page="../common/head.jsp"/>
+        <jsp:include page="../common/navigate.jsp"/>
+    </div>
     <!-- Content Wrapper. Contains page content -->
     <!-- 主内容div -->
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div id="contentWrapper" class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <h1>
@@ -252,12 +291,16 @@
             </h1>
             <ol class="breadcrumb">
                 <li><a href="/dashboard/ac.htm"><i class="fa fa-dashboard"></i> 监控</a></li>
-                <li class="active">设备告警</li>
+                <li class="active">设备告警</li>&nbsp;&nbsp;
+                <a href="javascript:" onclick="fullScreen(1)" data-toggle="offcanvas">全屏</a>
+                <a href="javascript:" onclick="fullScreen(0)" data-toggle="offcanvas">恢复</a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </ol>
         </section>
 
         <!-- Main content -->
-        <section class="content">
+        <section id="content" class="content">
 
             <div class="row">
                 <div class="col-md-3 col-sm-6 col-xs-12">

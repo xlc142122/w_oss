@@ -6,6 +6,7 @@
     <!-- logo for regular state and mobile devices -->
     <span class="logo-lg"><b>SmartCity</b> OSS</span>
   </a>
+
   <!-- Header Navbar: style can be found in header.less -->
   <nav class="navbar navbar-static-top" role="navigation">
     <!-- Sidebar toggle button-->
