@@ -2,9 +2,9 @@
   <!-- Logo -->
   <a href="#" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
-    <span class="logo-mini"><b>W</b>iFi</span>
+    <span class="logo-mini"><b>O</b>ss</span>
     <!-- logo for regular state and mobile devices -->
-    <span class="logo-lg"><b>Smart</b>City</span>
+    <span class="logo-lg"><b>SmartCity</b> OSS</span>
   </a>
   <!-- Header Navbar: style can be found in header.less -->
   <nav class="navbar navbar-static-top" role="navigation">

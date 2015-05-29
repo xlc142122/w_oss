@@ -66,7 +66,6 @@
     <ul class="treeview-menu">
       <li id="mtcWhl"><a href="/mwl/list.htm"><i class="fa fa-circle-o"></i> Mac白名单维护</a></li>
       <li id="mtcOnline"><a href="/onlineuser/find.htm"><i class="fa fa-circle-o"></i> 在线用户维护</a></li>
-      <li id="mtcUser"><a href="#" onclick="navControl('mtctree','mtcUser');"><i class="fa fa-circle-o"></i> 用户信息维护</a></li>
     </ul>
   </li>
 </ul>

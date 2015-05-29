@@ -48,20 +48,9 @@
     </style>
     <script type="text/javascript">
         //弹出隐藏层
-        function ShowDiv(show_div,bg_div){
-            document.getElementById(show_div).style.display='block';
-            document.getElementById(bg_div).style.display='block' ;
-            var bgdiv = document.getElementById(bg_div);
-            bgdiv.style.width = document.body.scrollWidth;
-            // bgdiv.style.height = $(document).height();
-            $("#"+bg_div).height($(document).height());
-        };
-        //关闭弹出层
-        function CloseDiv(show_div,bg_div)
-        {
-            document.getElementById(show_div).style.display='none';
-            document.getElementById(bg_div).style.display='none';
-        };
+        function showAddMacModal(){
+            $('#addMacModal').modal('show');
+        }
 
     </script>
 </head>
@@ -103,46 +92,55 @@
                             </div>
                             <div class="col-xs-1">
 
-                                <button class="btn btn-block btn-primary" onclick="ShowDiv('addWmlDiv', 'fade')">添加</button>
+                                <button class="btn btn-block btn-primary" onclick="showAddMacModal();">添加</button>
                             </div>
                         </div><!-- /.box-header -->
 
-                        <!--弹出层时背景层DIV-->
-                        <div id="fade" class="black_overlay"></div>
-                        <div id="addWmlDiv" class="white_content">
-                            <div style="text-align: right; cursor: default;height: 25px;background-color: #0075b0;">
-                                <span style="font-size: 16px;" onclick="CloseDiv('addWmlDiv','fade')">关闭&nbsp;&nbsp;</span>
-                            </div>
-                            <div style="background: lightgrey;">
+                        <div id="addMacModal" class="modal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title">添加Mac白名单</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form role="form">
+                                            <div class="box-body">
+                                                <div class="form-group">
+                                                    <label for="addMac">Mac地址</label>
+                                                    <input type="text" class="form-control" id="addMac" placeholder="Mac地址">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="addMerchant">商户名称</label>
+                                                    <input type="text" class="form-control" id="addMerchant" placeholder="商户名称">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="addMarket">商场名称</label>
+                                                    <input type="text" class="form-control" id="addMarket" placeholder="商场名称">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="addSsid">SSID</label>
+                                                    <input type="text" class="form-control" id="addSsid" placeholder="SSID">
+                                                </div>
+                                            </div><!-- /.box-body -->
 
-                                <form action="/mwl/list.htm" method="post">
-                                    <div class="col-xs-12">
-                                        <label for="addMac">Mac地址:</label>
-                                        <input type="text" id="addMac" name="mac" class="form-control" placeholder="Mac地址" required autofocus>
-                                    </div>
-                                    <div class="col-xs-12">
-                                        <label for="addMerchant">商户名称:</label>
-                                        <input type="text" id="addMerchant" name="merchant" class="form-control" placeholder="商户名称" required>
-                                    </div>
-                                    <div class="col-xs-12">
-                                        <label for="addMarket">商场名称:</label>
-                                        <input type="text" id="addMarket" name="market" class="form-control" placeholder="商场名称" required>
-                                    </div>
-                                    <div class="col-xs-12">
-                                        <label for="addSsid">SSID:</label>
-                                        <input type="text" id="addSsid" name="ssid" class="form-control" placeholder="SSID" required>
-                                    </div>
+                                            <div class="box-footer">
+                                                <div class="col-xs-3">
+                                                    <button class="btn btn-block btn-primary" type="submit">添&nbsp;&nbsp;&nbsp;加</button>
+                                                </div>
+                                                <div class="col-xs-3">
+                                                    <button class="btn btn-block btn-warning" type="reset">重&nbsp;&nbsp;&nbsp;置</button>
+                                                </div>
+                                            </div>
+                                        </form>
 
-                                    <div class="col-xs-6">
-                                        <br/>
-                                        <button class="btn btn-block btn-primary" type="submit">添&nbsp;&nbsp;&nbsp;加</button>
                                     </div>
-                                    <div class="col-xs-6">
-                                        <br/>
-                                        <button class="btn btn-block btn-warning" type="reset">重&nbsp;&nbsp;&nbsp;置</button>
+                                    <div class="modal-footer">
+                                        <%--<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>--%>
+                                        <%--<button type="button" class="btn btn-primary">添&nbsp;&nbsp;&nbsp;加</button>--%>
                                     </div>
-                                </form>
-                            </div>
+                                </div><!-- /.modal-content -->
+                            </div><!-- /.modal-dialog -->
                         </div>
 
                         <div class="box-body">
