@@ -46,11 +46,18 @@ public class DashboardController {
 
         long level1NumActive = alarmInfoService.countByLevelAndStatus(1, 1);
         long level1NumInActive = alarmInfoService.countByLevelAndStatus(1, 0);
+        long level2NumActive = alarmInfoService.countByLevelAndStatus(2, 0);
+        long level2NumInActive = alarmInfoService.countByLevelAndStatus(2, 1);
+        long level3NumActive = alarmInfoService.countByLevelAndStatus(3, 0);
+        long level3NumInActive = alarmInfoService.countByLevelAndStatus(3, 1);
 
         model.addAttribute("level1NumActive", level1NumActive);
         model.addAttribute("level1NumInActive", level1NumInActive);
-        model.addAttribute("level2Num", alarmCarpService.getLevel2Num());
-        model.addAttribute("level3Num", alarmCarpService.getLevel3Num());
+        model.addAttribute("level2NumActive", level2NumActive);
+        model.addAttribute("level2NumInActive", level2NumInActive);
+        model.addAttribute("level3NumActive", level3NumActive);
+        model.addAttribute("level3NumInActive", level3NumInActive);
+
 
         return "dashboard/eqpalarm";
     }

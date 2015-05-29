@@ -1,7 +1,8 @@
 package cn.gcks.smartcity.oss.service;
 
 import cn.gcks.smartcity.oss.entity.AlarmInfo;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -18,7 +19,8 @@ import java.util.Map;
  */
 
 @Slf4j
-@Data
+@Getter
+@Setter
 public class AlarmInfoWebSocketService extends TextWebSocketHandler {
 
     @Autowired

@@ -32,9 +32,9 @@ public class Application extends SpringBootServletInitializer implements WebSock
     public static void main(String[] args) throws Exception {
         SpringApplication application = new SpringApplication(Application.class);
 
-        Set<Object> sourceSet = new HashSet<Object>();
-        sourceSet.add("classpath:applicationContext.xml");
-        application.setSources(sourceSet);
+//        Set<Object> sourceSet = new HashSet<Object>();
+//        sourceSet.add("classpath:applicationContext.xml");
+//        application.setSources(sourceSet);
 
         application.run(args);
     }

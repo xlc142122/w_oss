@@ -8,14 +8,14 @@
               http://www.springframework.org/schema/task
               http://www.springframework.org/schema/task/spring-task.xsd">
 
-       <!--<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">-->
-              <!--<property name="corePoolSize" value="${}"></property>-->
-              <!--<property name="maxPoolSize" value="${}"></property>-->
-              <!--<property name="queueCapacity" value="${}"></property>-->
-              <!--<property name="threadGroupName" value="TaskThreadGroup"></property>-->
-       <!--</bean>-->
+       <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+              <property name="corePoolSize" value="${taskExecutor.corePoolSize}"></property>
+              <property name="maxPoolSize" value="${taskExecutor.maxPoolSize}"></property>
+              <property name="queueCapacity" value="${taskExecutor.queueCapacity}"></property>
+              <property name="threadGroupName" value="TaskThreadGroup"></property>
+       </bean>
 
-       <!--<task:annotation-driven executor="alarmCarpExecute" scheduler="alarmCarpScheduler"></task:annotation-driven>-->
-       <!--<task:executor id="alarmCarpExecute" pool-size="20"></task:executor>-->
-       <!--<task:scheduler id="alarmCarpScheduler" pool-size="2-"></task:scheduler>-->
+       <task:annotation-driven executor="alarmCarpExecute" scheduler="alarmCarpScheduler"></task:annotation-driven>
+       <task:executor id="alarmCarpExecute" pool-size="20"></task:executor>
+       <task:scheduler id="alarmCarpScheduler" pool-size="2-"></task:scheduler>
 </beans>
